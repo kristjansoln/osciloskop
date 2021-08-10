@@ -1,13 +1,13 @@
 /*
 * Osciloskop
 * Created: 8/1/2021 8:58:13 PM
-* Author: Kristjan Šoln
+* Author: Kristjan ï¿½oln
 *
-* Projekt Osciloskop je prvi del projekta Chopper driver - Miško gonilnik za stepper motor.
-* Cilj projekta Osciloskop je dovolj hitro branje šestih AD vhodov, da bo krmilnik
+* Projekt Osciloskop je prvi del projekta Chopper driver - Miï¿½ko gonilnik za stepper motor.
+* Cilj projekta Osciloskop je dovolj hitro branje ï¿½estih AD vhodov, da bo krmilnik
 * lahko krmilil tok skozi navitja preko hitrega preklapljanja krmilnih tranzistorjev.
-* Dodatna funkcionalnost tega projekta je prikaz napetosti v odvisnosti od èasa na grafu,
-* torej osnovna funkcionalnost osciloskopa, ki se bo lahko izkljuèila zaradi èasovne 
+* Dodatna funkcionalnost tega projekta je prikaz napetosti v odvisnosti od ï¿½asa na grafu,
+* torej osnovna funkcionalnost osciloskopa, ki se bo lahko izkljuï¿½ila zaradi ï¿½asovne 
 * potratnosti pisanja na LCD.
 */
 
@@ -18,7 +18,16 @@
 
 int main(void)
 {
-	// ---------------------------- Hardware level ----------------------------
+	// ---------------------------- Hardware level ---------------------------
+	#ifndef LCD_USE_PRINTF
+	#define LCD_USE_PRINTF
+	#endif
+	LCD_Init();
+	osc_IO_init();
+	osc_ADC_init(OSC_AD_INIT_USE_INTERRUPT);
+	
+	printf("Init done \n");
+	sei();	
 	
 	// ---------------------------- System level ----------------------------
 
