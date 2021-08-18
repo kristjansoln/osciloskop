@@ -16,10 +16,10 @@
 #define OSCILLOSCOPE_H_
 
 
-
 // Hardware level
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "lib/buffer.h"
 
 typedef enum osc_AD_init_type {OSC_AD_INIT_USE_POOLING, OSC_AD_INIT_USE_INTERRUPT} osc_AD_init_type_t;
 

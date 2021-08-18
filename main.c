@@ -28,6 +28,7 @@ int main(void)
 	
 	printf("Init done \n");
 	sei();	
+	buff.size=100;
 	
 	// ---------------------------- System level ----------------------------
 
@@ -44,5 +45,4 @@ int main(void)
 
 	}
 }
-
 

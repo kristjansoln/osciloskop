@@ -55,6 +55,7 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 		break;
 		case OSC_AD_INIT_USE_INTERRUPT: // Triggera se ro�no, na koncu konverzije pro�i interrupt.
 		ADCSRA |= (1<<ADIE);	// AD interrupt enable
+		
 		//sei(); To raje naredi v mainu (?)
 		break;
 	}
@@ -75,6 +76,13 @@ uint8_t osc_ADC_Read_by_pooling()
 	ADCSRA |= (1 << ADSC);
 	while (ADCSRA & (1 << ADSC)) {}
 	return ADCH; 	// Read the 8 bytes of the result => the upper byte of the 16b reg.
+}
+
+ISR(ADC_vect)	// ADC conv. complete interrupt
+{
+	// Push read data to FIFO
+	// Check Run conversion flag
+	// Run conversion
 }
 
 ////////////////////////////
@@ -99,3 +107,5 @@ void osc_LCD_show_value_at_XY(int x, int y, int value)
 	UG_PutString(x, y, txt);
 	return;
 }
+
+//ISR()
