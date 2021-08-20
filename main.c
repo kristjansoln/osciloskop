@@ -47,8 +47,16 @@ char b_ADC_active_flag = 0;
 		while (KBD_GetReleasedKey() != BTN_OK)
 			KBD_Read();
 
-		LED_3Tgl();
+		// Začetek branja
+		LED_3On();
 		b_ADC_active_flag = 1;
 		osc_ADC_start_conversion();
+
+		// Čaka da je buffer poln
+		while(b_ADC_active_flag == 1) {}
+
+		// Izpis na ekran
+		printf("Buffer poln, sledi izpis vrednosti");
+		// osc_LCD_display()
 	}
 }

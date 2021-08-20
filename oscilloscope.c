@@ -82,15 +82,16 @@ void osc_ADC_start_conversion()
 	return;
 }
 
+ISR(ADC_vect) // ADC conv. complete interrupt
+{
+	// Preberi vrednost
+	
+}
 
 ////////////////////////////
 // system level functions
 ////////////////////////////
 
-ISR(ADC_vect) // ADC conv. complete interrupt
-{
-	PORTE ^= (1<<0);
-}
 
 ///////////////////////////////
 // application level functions
