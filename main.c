@@ -18,8 +18,6 @@
 
 int main(void)
 {
-// var declarations
-char b_ADC_active_flag = 0;
 
 // inits
 #ifndef LCD_USE_PRINTF
@@ -50,13 +48,15 @@ char b_ADC_active_flag = 0;
 		// Začetek branja
 		LED_3On();
 		b_ADC_active_flag = 1;
+		osc_ADC_Read_by_pooling();	// Prebere eno vrednost, da se izogne prvi (nepravilni) meritvi. Vmes disabla interrupte.
 		osc_ADC_start_conversion();
-
+	
 		// Čaka da je buffer poln
 		while(b_ADC_active_flag == 1) {}
 
 		// Izpis na ekran
-		printf("Buffer poln, sledi izpis vrednosti");
-		// osc_LCD_display()
+		LED_AllOff();
+		printf("Buffer poln, sledi izpis vrednosti\n");
+		osc_LCD_display_vals();
 	}
 }

@@ -12,6 +12,8 @@
 // hardware level functions
 ////////////////////////////
 
+char b_ADC_active_flag = 0;
+
 void osc_IO_init()
 {
 	// Initialize the IO pins
@@ -30,7 +32,7 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 	ADMUX &= ~((3 << REFS0) | (1 << ADLAR) | (0xF << MUX0)); // clear previous bits
 	ADMUX |= (01 << REFS0);									 // select AVCC as voltage reference
 	ADMUX |= (1 << ADLAR);									 // left adjust the result (8 bit precision allows this)
-	
+
 	// ADCSRA register
 	ADCSRA = 0x00;			// Clear register
 	ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 110 - 64 - 250 kHz - TODO: TO PROBAJ POJA�AT NA 500 kHz
@@ -69,11 +71,18 @@ void osc_ADC_select_channel(uint8_t channel)
 
 uint8_t osc_ADC_Read_by_pooling()
 {
+	// Momentarily disable interrupts if enabled
+	char ADCSRA_old = ADCSRA;
+	ADCSRA = (ADCSRA_old & ~(1 << ADIE));
+	// Execute a conversion
 	ADCSRA |= (1 << ADSC);
 	while (ADCSRA & (1 << ADSC))
 	{
 	}
-	return ADCH; // Read the 8 bytes of the result => the upper byte of the 16b reg.
+	// Revert ADCSRA to previous state
+	ADCSRA = ADCSRA_old;
+	// Read the 8 bytes of the result => the upper byte of the 16b reg.
+	return ADCH;
 }
 
 void osc_ADC_start_conversion()
@@ -85,13 +94,19 @@ void osc_ADC_start_conversion()
 ISR(ADC_vect) // ADC conv. complete interrupt
 {
 	// Preberi vrednost
-	
+	char c_value = ADCH;
+	if (BUFF_store_data(c_value, &buff) == BUFFER_ERROR)
+	{
+		b_ADC_active_flag = 0; // Zamenjaj s clearADCflag();
+		LED_0On();
+	}
+	else
+		ADCSRA |= (1 << ADSC); // ADC start conversion
 }
 
 ////////////////////////////
 // system level functions
 ////////////////////////////
-
 
 ///////////////////////////////
 // application level functions
@@ -112,3 +127,11 @@ void osc_LCD_show_value_at_XY(int x, int y, int value)
 	return;
 }
 
+void osc_LCD_display_vals()
+{
+	char val = 0;
+
+	while (BUFF_get_data(&buff, &val) == BUFFER_OK)
+		printf("%d \n", val);
+	return;
+}
