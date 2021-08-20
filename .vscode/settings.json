@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "oscilloscope.h": "c",
+        "kbd.h": "c"
+    }
+}

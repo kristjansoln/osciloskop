@@ -24,43 +24,39 @@ void osc_IO_init()
 	return;
 }
 
-
 void osc_ADC_init(osc_AD_init_type_t init_type)
 {
 	// ADMUX register
 	ADMUX &= ~((3 << REFS0) | (1 << ADLAR) | (0xF << MUX0)); // clear previous bits
 	ADMUX |= (01 << REFS0);									 // select AVCC as voltage reference
 	ADMUX |= (1 << ADLAR);									 // left adjust the result (8 bit precision allows this)
-	// Channel selection => druga funkcija (write to MUX bits)
-
+	
 	// ADCSRA register
 	ADCSRA = 0x00;			// Clear register
 	ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 110 - 64 - 250 kHz - TODO: TO PROBAJ POJA�AT NA 500 kHz
 	/* NOTE:
-	 * Resolucija se (o�itno) nastavi zgolj s prescalerjem, torej �e bo ADC clock
-	 * vi�ji od 200 kHz, bo resolucija manj�a. Ne vem, �e se za to ADC conv. end flag
-	 * setta prej, ampak je vsaj frekvenca vi�ja.
+	 * Resolucija se (ocitno) nastavi zgolj s prescalerjem, torej ce bo ADC clock
+	 * višji od 200 kHz, bo resolucija manjsa. Ne vem, ce se za to ADC conv. end flag
+	 * setta prej, ampak je vsaj frekvenca visja.
 	 */
 
-// ADCSRB register
+	// ADCSRB register
 	ADCSRB = 0x00; // Clear register
-	
+
 	// Power reduction register
-	PRR0 &= ~(1<<PRADC);	// Disable ADC power reduction
-	
+	PRR0 &= ~(1 << PRADC); // Disable ADC power reduction
+
 	// Triggering and interrupts setup. 	NOTE: dont forget sei();
-	switch(init_type)
+	switch (init_type)
 	{
-		case OSC_AD_INIT_USE_POOLING:	// Triggera se ročno, na koncu moraš sam poolat da prebereš rezultat.
+	case OSC_AD_INIT_USE_POOLING: // Triggera se ročno, na koncu moraš sam poolat da prebereš rezultat.
 		break;
-		case OSC_AD_INIT_USE_INTERRUPT: // Triggera se ro�no, na koncu konverzije pro�i interrupt.
-		ADCSRA |= (1<<ADIE);	// AD interrupt enable
-		
-		//sei(); To raje naredi v mainu (?)
+	case OSC_AD_INIT_USE_INTERRUPT: // Triggera se ro�no, na koncu konverzije pro�i interrupt.
+		ADCSRA |= (1 << ADIE);		// AD interrupt enable
 		break;
 	}
-	
-	ADCSRA |= (1<<ADEN); // ADC ENABLE - povsem na koncu
+
+	ADCSRA |= (1 << ADEN); // ADC ENABLE - povsem na koncu
 	return;
 }
 
@@ -74,20 +70,27 @@ void osc_ADC_select_channel(uint8_t channel)
 uint8_t osc_ADC_Read_by_pooling()
 {
 	ADCSRA |= (1 << ADSC);
-	while (ADCSRA & (1 << ADSC)) {}
-	return ADCH; 	// Read the 8 bytes of the result => the upper byte of the 16b reg.
+	while (ADCSRA & (1 << ADSC))
+	{
+	}
+	return ADCH; // Read the 8 bytes of the result => the upper byte of the 16b reg.
 }
 
-ISR(ADC_vect)	// ADC conv. complete interrupt
+void osc_ADC_start_conversion()
 {
-	// Push read data to FIFO
-	// Check Run conversion flag
-	// Run conversion
+	ADCSRA |= (1 << ADSC);
+	return;
 }
+
 
 ////////////////////////////
 // system level functions
 ////////////////////////////
+
+ISR(ADC_vect) // ADC conv. complete interrupt
+{
+	PORTE ^= (1<<0);
+}
 
 ///////////////////////////////
 // application level functions
@@ -95,7 +98,7 @@ ISR(ADC_vect)	// ADC conv. complete interrupt
 
 void osc_LCD_init()
 {
-	LCD_Init();		// Initialize the LCD
+	LCD_Init(); // Initialize the LCD
 	// TODO: Prepare to draw
 	return;
 }
@@ -108,4 +111,3 @@ void osc_LCD_show_value_at_XY(int x, int y, int value)
 	return;
 }
 
-//ISR()

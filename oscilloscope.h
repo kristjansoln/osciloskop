@@ -27,6 +27,7 @@ void osc_IO_init();	// Initialize IO ports. Modify this function if necessary.
 void osc_ADC_init(osc_AD_init_type_t init_type); // Initialize AD converter, use OSC_AD_INIT_USE_POOLING, OSC_AD_INIT_USE_INTERRUPT as argument. Dont forget sei().
 void osc_ADC_select_channel(uint8_t channel);	// Select ADC channel to read from.
 uint8_t osc_ADC_Read_by_pooling();		// Return the value of the currently selected ADC channel using pooling.
+void osc_ADC_start_conversion();        // Write to ADCSRA to start a conversion
 
 // System level
 
@@ -35,4 +36,5 @@ uint8_t osc_ADC_Read_by_pooling();		// Return the value of the currently selecte
 #define LCD_USE_PRINTF
 void osc_LCD_init();    // Prepare the LCD to be used within the oscilloscope function
 void osc_LCD_show_value_at_XY(int x, int y, int value);     // Print data to LCD. Consider using printf() tho.
+
 #endif
