@@ -38,7 +38,10 @@ void osc_ADC_start_conversion();        // Write to ADCSRA to start a conversion
 #include "lib/LCD_Ili9341.h"
 #define LCD_USE_PRINTF
 void osc_LCD_init();    // Prepare the LCD to be used within the oscilloscope function
-void osc_LCD_show_value_at_XY(int x, int y, int value);     // Print data to LCD. Consider using printf() tho.
+void osc_LCD_show_value_at_XY(int x, int y, int value);     // Print data to LCD by coordinates
 void osc_LCD_display_vals();    // Display buffer data on LCD
+void osc_LCD_draw_bg();		// Draw background 
+void osc_LCD_draw_dot_by_xy(int x, int y);	// Draw dot using coordinates
+void osc_LCD_draw_dot_by_val(char val, char x_offset);	// Draw dot using value and offset
 
 #endif

@@ -115,7 +115,6 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 void osc_LCD_init()
 {
 	LCD_Init(); // Initialize the LCD
-	// TODO: Prepare to draw
 	return;
 }
 
@@ -133,5 +132,20 @@ void osc_LCD_display_vals()
 
 	while (BUFF_get_data(&buff, &val) == BUFFER_OK)
 		printf("%d \n", val);
+	return;
+}
+
+void osc_LCD_draw_bg()
+{
+	return;
+}
+
+void osc_LCD_draw_dot_by_xy(int x, int y)
+{
+	return;
+}
+
+void osc_LCD_draw_dot_by_val(char val, char x_offset)
+{
 	return;
 }
