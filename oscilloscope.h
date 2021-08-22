@@ -2,7 +2,7 @@
 * oscilloscope.h
 *
 * Created: 6. 08. 2021 19:06:22
-* Author: Kristjan �oln
+* Author: Kristjan Soln
 *
 * Projekt Osciloskop je prvi del projekta Chopper driver - Mi�ko gonilnik za stepper motor.
 * Cilj projekta Osciloskop je dovolj hitro branje �estih AD vhodov, da bo krmilnik
@@ -35,13 +35,23 @@ void osc_ADC_start_conversion();        // Write to ADCSRA to start a conversion
 // System level
 
 // Application level
-#include "lib/LCD_Ili9341.h"
 #define LCD_USE_PRINTF
+#include "lib/LCD_Ili9341.h"
+
+#define OSC_LCD_Y_OFFSET 20
+#define OSC_LCD_X_OFFSET 40
+#define OSC_LCD_Y_SCALE_FACTOR 0.75f
+
+typedef enum osc_LCD_display_type {OSC_LCD_USE_DOTS, OSC_LCD_USE_LINES} osc_LCD_display_t;
+
 void osc_LCD_init();    // Prepare the LCD to be used within the oscilloscope function
 void osc_LCD_show_value_at_XY(int x, int y, int value);     // Print data to LCD by coordinates
-void osc_LCD_display_vals();    // Display buffer data on LCD
+void osc_LCD_clear();		// Clear all
 void osc_LCD_draw_bg();		// Draw background 
 void osc_LCD_draw_dot_by_xy(int x, int y);	// Draw dot using coordinates
-void osc_LCD_draw_dot_by_val(char val, char x_offset);	// Draw dot using value and offset
+void osc_LCD_draw_line_by_xy(int x, int y); // Draw line using coordinates and value
+void osc_LCD_draw_dot_by_val(char val, int x_offset);	// Draw dot using value and offset
+void osc_LCD_draw_line_by_val(char val, int x_offset);	// Draw line using value and offset
+void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type);    // Display buffer data on LCD. Use OSC_LCD_USE_DOTS or OSC_LCD_USE_LINES.
 
 #endif

@@ -115,6 +115,8 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 void osc_LCD_init()
 {
 	LCD_Init(); // Initialize the LCD
+	osc_LCD_draw_bg();
+	
 	return;
 }
 
@@ -126,26 +128,73 @@ void osc_LCD_show_value_at_XY(int x, int y, int value)
 	return;
 }
 
-void osc_LCD_display_vals()
+void osc_LCD_clear()
 {
-	char val = 0;
-
-	while (BUFF_get_data(&buff, &val) == BUFFER_OK)
-		printf("%d \n", val);
+	// Črn kvadrat čez ekran
+	ILI9341_fillScreen(ILI9341_BLACK);
+	osc_LCD_draw_bg();
 	return;
 }
 
 void osc_LCD_draw_bg()
 {
+	ILI9341_drawFastVLine(OSC_LCD_X_OFFSET, OSC_LCD_Y_OFFSET, (int)(255.f * OSC_LCD_Y_SCALE_FACTOR), ILI9341_WHITE);
+	ILI9341_drawFastHLine(OSC_LCD_X_OFFSET, OSC_LCD_Y_OFFSET + (int)(255.f * OSC_LCD_Y_SCALE_FACTOR), BUFFER_LENGTH, ILI9341_WHITE);
+
+	UG_PutString(5, OSC_LCD_Y_OFFSET, "255");
+	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)(255.f * OSC_LCD_Y_SCALE_FACTOR) - 10, "0");
 	return;
 }
 
 void osc_LCD_draw_dot_by_xy(int x, int y)
 {
+	ILI9341_drawPixel(x, y, ILI9341_YELLOW);
 	return;
 }
 
-void osc_LCD_draw_dot_by_val(char val, char x_offset)
+void osc_LCD_draw_line_by_val(char val, int x_offset)
 {
+	int y = OSC_LCD_Y_OFFSET + (float)(255 - val) * OSC_LCD_Y_SCALE_FACTOR;
+	int x = OSC_LCD_X_OFFSET + x_offset;
+	int height = (int)((float)val * OSC_LCD_Y_SCALE_FACTOR);
+	ILI9341_drawFastVLine(x, y, height, ILI9341_YELLOW);
+	return;
+}
+
+void osc_LCD_draw_dot_by_val(char val, int x_offset)
+{
+	int y = OSC_LCD_Y_OFFSET + (float)(255 - val) * OSC_LCD_Y_SCALE_FACTOR;
+	int x = OSC_LCD_X_OFFSET + x_offset;
+	osc_LCD_draw_dot_by_xy(x, y);
+	return;
+}
+
+void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type)
+{
+	char data = 0;
+
+	for (int i = 0; i < BUFFER_LENGTH; i++)
+	{
+		if (BUFF_get_data(buff, &data) == BUFFER_OK) // Print to LCD
+		{
+			switch (display_type) // Izberi način prikaza
+			{
+			case OSC_LCD_USE_DOTS:
+				osc_LCD_draw_dot_by_val(data, i + 1);
+				break;
+			case OSC_LCD_USE_LINES:
+				osc_LCD_draw_line_by_val(data, i + 1);
+				break;
+			default:
+				printf("Error displaying vals, check passed arguments");
+				while (1)
+				{
+				}
+				break;
+			}
+		}
+		else
+			break; // Buffer je prazen, koncaj pisanje
+	}
 	return;
 }

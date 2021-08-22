@@ -13,7 +13,7 @@
 #include <stdlib.h>
 
 // settings
-#define BUFFER_LENGTH	10		// buffer lenght (up to 255)
+#define BUFFER_LENGTH	250		// buffer lenght (up to 255)
 // return error values
 #define BUFFER_OK		1		// no error return value
 #define BUFFER_ERROR	0		// return value if error occurred
