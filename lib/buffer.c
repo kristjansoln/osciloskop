@@ -1,7 +1,6 @@
 #include "buffer.h"
 
-// Inicializacija globalnega bufferja
-struct buffer_t buff = {0};
+
 
 int BUFF_store_data(char data, struct buffer_t *buffer)
 {

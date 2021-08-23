@@ -14,6 +14,11 @@
 
 char b_ADC_active_flag = 0;
 
+// Inicializacija globalnega bufferja
+struct buffer_t buff_2 = {0};
+struct buffer_t buff_3 = {0};
+struct buffer_t *buffer_pointers[] = {0, 0, &buff_2, &buff_3, 0, 0, 0, 0};
+
 void osc_IO_init()
 {
 	// Initialize the IO pins
@@ -35,7 +40,7 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 
 	// ADCSRA register
 	ADCSRA = 0x00;			// Clear register
-	ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 110 - 64 - 250 kHz - TODO: TO PROBAJ POJA�AT NA 500 kHz
+	ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
 	/* NOTE:
 	 * Resolucija se (ocitno) nastavi zgolj s prescalerjem, torej ce bo ADC clock
 	 * višji od 200 kHz, bo resolucija manjsa. Ne vem, ce se za to ADC conv. end flag
@@ -58,6 +63,8 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 		break;
 	}
 
+	c_current_ADC_channel = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM; // Nastavi kanal, na katerem bo potekala prva meritev
+
 	ADCSRA |= (1 << ADEN); // ADC ENABLE - povsem na koncu
 	return;
 }
@@ -66,6 +73,17 @@ void osc_ADC_select_channel(uint8_t channel)
 {
 	ADMUX = (ADMUX & 0xF0) | (channel & 0x0F); // This is safer
 	//ADMUX = (ADMUX & 0xF0) | channel;		// This is faster
+	return;
+}
+
+void osc_ADC_increment_channel()
+{
+	// Increment channel + fast modulo
+	if ((++c_current_ADC_channel) > OSC_ADC_UPPER_ADC_CHANNEL_NUM)
+		c_current_ADC_channel = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM;
+
+	ADMUX = (ADMUX & 0xF0) | (c_current_ADC_channel & 0x0F); // This is safer
+	//ADMUX = (ADMUX & 0xF0) | c_current_ADC_channel;		// This is faster
 	return;
 }
 
@@ -95,13 +113,16 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 {
 	// Preberi vrednost
 	char c_value = ADCH;
-	if (BUFF_store_data(c_value, &buff) == BUFFER_ERROR)
-	{
-		b_ADC_active_flag = 0; // Zamenjaj s clearADCflag();
-		LED_0On();
-	}
+	// Če je buffer poln, ne proži naslednje konverzije in cleara flag, ki je indikator za konec merilnega cikla
+	if (BUFF_store_data(c_value, buffer_pointers[c_current_ADC_channel]) == BUFFER_ERROR)
+		b_ADC_active_flag = 0; // Zamenjaj s clearADCflag()?
 	else
-		ADCSRA |= (1 << ADSC); // ADC start conversion
+	{
+		// Set next channel & start conversion
+		osc_ADC_increment_channel();
+		ADCSRA |= (1 << ADSC); 
+	}
+	return;
 }
 
 ////////////////////////////
@@ -116,7 +137,7 @@ void osc_LCD_init()
 {
 	LCD_Init(); // Initialize the LCD
 	osc_LCD_draw_bg();
-	
+
 	return;
 }
 
@@ -146,30 +167,30 @@ void osc_LCD_draw_bg()
 	return;
 }
 
-void osc_LCD_draw_dot_by_xy(int x, int y)
+void osc_LCD_draw_dot_by_xy(int x, int y, int color)
 {
-	ILI9341_drawPixel(x, y, ILI9341_YELLOW);
+	ILI9341_drawPixel(x, y, color);
 	return;
 }
 
-void osc_LCD_draw_line_by_val(char val, int x_offset)
+void osc_LCD_draw_dot_by_val(char val, int x_offset, int color)
+{
+	int y = OSC_LCD_Y_OFFSET + (float)(255 - val) * OSC_LCD_Y_SCALE_FACTOR;
+	int x = OSC_LCD_X_OFFSET + x_offset;
+	osc_LCD_draw_dot_by_xy(x, y, color);
+	return;
+}
+
+void osc_LCD_draw_line_by_val(char val, int x_offset, int color)
 {
 	int y = OSC_LCD_Y_OFFSET + (float)(255 - val) * OSC_LCD_Y_SCALE_FACTOR;
 	int x = OSC_LCD_X_OFFSET + x_offset;
 	int height = (int)((float)val * OSC_LCD_Y_SCALE_FACTOR);
-	ILI9341_drawFastVLine(x, y, height, ILI9341_YELLOW);
+	ILI9341_drawFastVLine(x, y, height, color);
 	return;
 }
 
-void osc_LCD_draw_dot_by_val(char val, int x_offset)
-{
-	int y = OSC_LCD_Y_OFFSET + (float)(255 - val) * OSC_LCD_Y_SCALE_FACTOR;
-	int x = OSC_LCD_X_OFFSET + x_offset;
-	osc_LCD_draw_dot_by_xy(x, y);
-	return;
-}
-
-void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type)
+void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type, int color)
 {
 	char data = 0;
 
@@ -180,10 +201,10 @@ void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type)
 			switch (display_type) // Izberi način prikaza
 			{
 			case OSC_LCD_USE_DOTS:
-				osc_LCD_draw_dot_by_val(data, i + 1);
+				osc_LCD_draw_dot_by_val(data, (i + 1), color);
 				break;
 			case OSC_LCD_USE_LINES:
-				osc_LCD_draw_line_by_val(data, i + 1);
+				osc_LCD_draw_line_by_val(data, i + 1, color);
 				break;
 			default:
 				printf("Error displaying vals, check passed arguments");

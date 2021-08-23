@@ -27,8 +27,7 @@ struct buffer_t
 	volatile uint8_t size;
 };
 
-// Deklaracija globalnega bufferja
-extern struct buffer_t buff;
+
 
 // function prototypes
 int BUFF_store_data(char data, struct buffer_t *buffer);		// Store one byte of data (returns BUFFER_OK or BUFFER_ERROR)
