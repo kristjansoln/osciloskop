@@ -50,6 +50,8 @@ int main(void)
 				break;
 			else if (x == BTN_ESC)
 				osc_LCD_clear();
+			else if (x == BTN_A)
+				osc_LCD_draw_legend();
 		}
 		// Začetek branja
 		b_ADC_active_flag = 1;

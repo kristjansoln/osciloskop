@@ -70,7 +70,8 @@ const int osc_LCD_colors_array[8]; // Definicija arraya za hitro izbiranje barv 
 void osc_LCD_init();                                                                         // Prepare the LCD to be used within the oscilloscope function
 void osc_LCD_show_value_at_XY(int x, int y, int value);                                      // Print data to LCD by coordinates
 void osc_LCD_clear();                                                                        // Clear all
-void osc_LCD_draw_bg();                                                                      // Draw background
+void osc_LCD_draw_bg();                                                                      // Draw background screen
+void osc_LCD_draw_legend();                                                                  // Draw legend screen
 void osc_LCD_draw_dot_by_xy(int x, int y, int color);                                        // Draw dot using coordinates
 void osc_LCD_draw_dot_by_val(char val, int x_offset, int color);                             // Draw dot using value and offset
 void osc_LCD_draw_line_by_val(char val, int x_offset, int color);                            // Draw line using value and offset

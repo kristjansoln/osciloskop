@@ -38,8 +38,13 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 	ADMUX |= (1 << ADLAR);									 // left adjust the result (8 bit precision allows this)
 
 	// ADCSRA register
-	ADCSRA = 0x00;			// Clear register
-	ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
+	ADCSRA = 0x00; // Clear register
+	//ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 0b110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
+	//ADCSRA |= (1 << ADPS0) | (1 << ADPS2); // ADC clock prescaler - 0b101 - 32 - 500 kHz
+	ADCSRA |= (1 << ADPS2);				   // ADC clock prescaler - 0b100 - 16 - 1 MHz
+	//ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // ADC clock prescaler - 0b101 - 8 - 2 MHz
+	//ADCSRA |= (1 << ADPS1);				   // ADC clock prescaler - 0b100 - 4 - 4 MHz
+
 	/* NOTE:
 	* Resolucija se (ocitno) nastavi zgolj s prescalerjem, torej ce bo ADC clock
 	* višji od 200 kHz, bo resolucija manjsa. Ne vem, ce se za to ADC conv. end flag
@@ -132,7 +137,7 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 // application level functions
 ///////////////////////////////
 const int osc_LCD_colors_array[8] = {ILI9341_YELLOW, ILI9341_RED, ILI9341_BLUE, ILI9341_PURPLE,
-									 ILI9341_CYAN, ILI9341_PINK, ILI9341_OLIVE, ILI9341_ORANGE}; 
+									 ILI9341_CYAN, ILI9341_PINK, ILI9341_OLIVE, ILI9341_ORANGE};
 
 void osc_LCD_init()
 {
@@ -166,6 +171,29 @@ void osc_LCD_draw_bg()
 	UG_PutString(5, OSC_LCD_Y_OFFSET, "255");
 	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)(255.f * OSC_LCD_Y_SCALE_FACTOR) - 10, "0");
 	return;
+}
+
+void osc_LCD_draw_legend()
+{
+	char string_to_display[20];
+	//{"a", "b", "c", "d", "e", "f", "g", "h"}[i];
+	const char *pin_tags[8] = {"PC0", "PC1", "PC2", "PC3", "PC4", "PC5", "PE2", "PE3"};
+
+	ILI9341_fillScreen(ILI9341_BLACK);
+
+	for (int i = 0; i < 8; i++)
+	{
+		// Draw dot (channel-in-use indicator)
+		if ((i >= OSC_ADC_BOTTOM_ADC_CHANNEL_NUM) && (i <= OSC_ADC_UPPER_ADC_CHANNEL_NUM))
+			UG_PutString(10, (40 + i * 20), "*");
+		// Print channel name
+		sprintf(string_to_display, "AD channel %d", i);
+		UG_PutString(20, (40 + i * 20), string_to_display);
+		// Print pin number
+		UG_PutString(170, (40 + i * 20), pin_tags[i]);
+		// Draw line
+		ILI9341_drawFastHLine(210, (40 + i * 20 + 5), 70, osc_LCD_colors_array[i]);
+	}
 }
 
 void osc_LCD_draw_dot_by_xy(int x, int y, int color)
