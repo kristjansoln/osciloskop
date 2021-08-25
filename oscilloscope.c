@@ -1,9 +1,8 @@
 /*
-* oscilloscope_lib.c
+* oscilloscope.c
 *
 * Created: 6. 08. 2021 19:05:54
 * Author: Kristjan Šoln
-* main branch
 */
 
 #include "oscilloscope.h"
@@ -42,10 +41,10 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 	ADCSRA = 0x00;			// Clear register
 	ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
 	/* NOTE:
-	 * Resolucija se (ocitno) nastavi zgolj s prescalerjem, torej ce bo ADC clock
-	 * višji od 200 kHz, bo resolucija manjsa. Ne vem, ce se za to ADC conv. end flag
-	 * setta prej, ampak je vsaj frekvenca visja.
-	 */
+	* Resolucija se (ocitno) nastavi zgolj s prescalerjem, torej ce bo ADC clock
+	* višji od 200 kHz, bo resolucija manjsa. Ne vem, ce se za to ADC conv. end flag
+	* setta prej, ampak je vsaj frekvenca visja.
+	*/
 
 	// ADCSRB register
 	ADCSRB = 0x00; // Clear register
@@ -120,7 +119,7 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 	{
 		// Set next channel & start conversion
 		osc_ADC_increment_channel();
-		ADCSRA |= (1 << ADSC); 
+		ADCSRA |= (1 << ADSC);
 	}
 	return;
 }
@@ -132,6 +131,8 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 ///////////////////////////////
 // application level functions
 ///////////////////////////////
+const int osc_LCD_colors_array[8] = {ILI9341_YELLOW, ILI9341_RED, ILI9341_BLUE, ILI9341_PURPLE,
+									 ILI9341_CYAN, ILI9341_PINK, ILI9341_OLIVE, ILI9341_ORANGE}; 
 
 void osc_LCD_init()
 {
@@ -190,7 +191,7 @@ void osc_LCD_draw_line_by_val(char val, int x_offset, int color)
 	return;
 }
 
-void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type, int color)
+void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type, int color_index)
 {
 	char data = 0;
 
@@ -201,10 +202,10 @@ void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type,
 			switch (display_type) // Izberi način prikaza
 			{
 			case OSC_LCD_USE_DOTS:
-				osc_LCD_draw_dot_by_val(data, (i + 1), color);
+				osc_LCD_draw_dot_by_val(data, (i + 1), osc_LCD_colors_array[color_index]);
 				break;
 			case OSC_LCD_USE_LINES:
-				osc_LCD_draw_line_by_val(data, i + 1, color);
+				osc_LCD_draw_line_by_val(data, i + 1, osc_LCD_colors_array[color_index]);
 				break;
 			default:
 				printf("Error displaying vals, check passed arguments");

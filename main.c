@@ -34,7 +34,6 @@ int main(void)
 	osc_LCD_init();
 	osc_ADC_select_channel(2); // X kanal joysticka
 
-
 	sei();
 
 	// main program
@@ -58,12 +57,13 @@ int main(void)
 		osc_ADC_start_conversion();
 
 		// Čaka da je buffer poln
-		while (b_ADC_active_flag == 1) {}
+		while (b_ADC_active_flag == 1)
+		{
+		}
 
 		// Izpis na ekran
-		for(int j = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM; j<=OSC_ADC_UPPER_ADC_CHANNEL_NUM; j++)
-		osc_LCD_display_vals(&*(buffer_pointers[j]), OSC_LCD_USE_DOTS, ILI9341_GREENYELLOW);
+		for (int j = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM; j <= OSC_ADC_UPPER_ADC_CHANNEL_NUM; j++)
+			osc_LCD_display_vals(&*(buffer_pointers[j]), OSC_LCD_USE_DOTS, j);
 		// Dodaj različne barve in legendo (const int barve[j] = {rumena, modra,zelena, vijolčna..} )
 	}
 }
-
