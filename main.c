@@ -31,7 +31,7 @@ int main(void)
 
 	osc_IO_init();
 	osc_ADC_init(OSC_AD_INIT_USE_INTERRUPT);
-	osc_LCD_init();
+	//osc_LCD_init();
 	osc_ADC_select_channel(2); // X kanal joysticka
 
 	sei();
@@ -42,7 +42,8 @@ int main(void)
 		// Čakaj na stisk tipke
 		KBD_flush();
 		char x;
-		while (1)
+		// Zakomentirano (za lažjo analizo assembly kode, da se ne obesi na LCD funkcijah)
+		/*while (1)
 		{
 			KBD_Read();
 			x = KBD_GetReleasedKey();
@@ -52,11 +53,11 @@ int main(void)
 				osc_LCD_clear();
 			else if (x == BTN_A)
 				osc_LCD_draw_legend();
-		}
+		}*/
 		// Začetek branja
 		b_ADC_active_flag = 1;
-		osc_ADC_Read_by_pooling(); // Prebere eno vrednost, da se izogne prvi (nepravilni) meritvi. Vmes disabla interrupte.
-		osc_ADC_start_conversion();
+		//osc_ADC_Read_by_pooling(); // Prebere eno vrednost, da se izogne prvi (nepravilni) meritvi. Vmes disabla interrupte.
+		//osc_ADC_start_conversion();
 
 		// Čaka da je buffer poln
 		while (b_ADC_active_flag == 1)

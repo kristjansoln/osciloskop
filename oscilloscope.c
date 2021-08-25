@@ -86,8 +86,8 @@ void osc_ADC_increment_channel()
 	if ((++c_current_ADC_channel) > OSC_ADC_UPPER_ADC_CHANNEL_NUM)
 		c_current_ADC_channel = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM;
 
-	ADMUX = (ADMUX & 0xF0) | (c_current_ADC_channel & 0x0F); // This is safer
-	//ADMUX = (ADMUX & 0xF0) | c_current_ADC_channel;		// This is faster
+	//ADMUX = (ADMUX & 0xF0) | (c_current_ADC_channel & 0x0F); // This is safer
+	ADMUX = (ADMUX & 0xF0) | c_current_ADC_channel;		// This is faster
 	return;
 }
 
@@ -116,9 +116,8 @@ void osc_ADC_start_conversion()
 ISR(ADC_vect) // ADC conv. complete interrupt
 {
 	// Preberi vrednost
-	char c_value = ADCH;
 	// Če je buffer poln, ne proži naslednje konverzije in cleara flag, ki je indikator za konec merilnega cikla
-	if (BUFF_store_data(c_value, buffer_pointers[c_current_ADC_channel]) == BUFFER_ERROR)
+	if (BUFF_store_data(ADCH, buffer_pointers[c_current_ADC_channel]) == BUFFER_ERROR)
 		b_ADC_active_flag = 0; // Zamenjaj s clearADCflag()?
 	else
 	{
