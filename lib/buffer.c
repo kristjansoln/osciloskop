@@ -25,6 +25,11 @@ int BUFF_store_data(char data, struct buffer_t *buffer)
 
 	return BUFFER_OK;
 }
+/* Note: možna optimizacija: inkrement prestavim pod prvi pogoj, da se to preveri najprej.
+*  Ker bo največkrat situacija, da bo buffer ne-prazen in ne-poln (a je to res??), se splača to preverit
+*  najprej, da lahko preskočim ostale pogoje in ne tratim ciklov z njimi.
+*
+*/
 
 int BUFF_get_data(struct buffer_t *buffer, char *data)
 {
