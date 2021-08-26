@@ -14,18 +14,24 @@
 char b_ADC_active_flag = 0;
 
 // Inicializacija globalnega bufferja
-struct buffer_t buff_2 = {0};
-struct buffer_t buff_3 = {0};
-struct buffer_t *buffer_pointers[] = {0, 0, &buff_2, &buff_3, 0, 0, 0, 0};
+struct buffer_t buff_0 = {0};
+//struct buffer_t buff_1 = {0};
+//struct buffer_t buff_2 = {0};
+//struct buffer_t buff_3 = {0};
+//struct buffer_t buff_4 = {0};
+//struct buffer_t buff_5 = {0};
+//struct buffer_t buff_6 = {0};
+//struct buffer_t buff_7 = {0};
+struct buffer_t *buffer_pointers[] = {&buff_0, 0, 0, 0, 0, 0, 0, 0};
 
 void osc_IO_init()
 {
-	// Initialize the IO pins
-	// X - PC2 - ADC2
-	// Y - PC3 - ADC3
-	DDRC &= ~((1 << DDRC2) | (1 << DDRC3));	   // joystick pins as inputs
-	PORTC &= ~((1 << PORTC2) & (1 << PORTC3)); // disable pullups on joystick pins
-	DIDR0 |= (1 << PINC2) | (1 << PINC3);	   // Disable digital input buffer on ADC channel 2 and 3
+	// Inputs configuration
+	DDRC &= ~((1 << DDRC0) | (1 << DDRC1) | (1 << DDRC2) | (1 << DDRC3) | (1 << DDRC4) | (1 << DDRC5)); // pins as inputs
+	DDRE &= ~((1 << DDRE2) | (1 << DDRE3));
+	PORTC &= ~((1 << PORTC0) | (1 << PORTC1) | (1 << PORTC2) | (1 << PORTC3) | (1 << PORTC4) | (1 << PORTC5)); // disable pullups on pins
+	PORTE &= ~((1 << PORTE2) | (1 << PORTE3));
+	DIDR0 = 0xFF; // Disable digital input buffer on all ADC channels. 
 
 	return;
 }
@@ -39,11 +45,11 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 
 	// ADCSRA register
 	ADCSRA = 0x00; // Clear register
-	//ADCSRA |= (6 << ADPS0); // ADC clock prescaler - 0b110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
-	//ADCSRA |= (1 << ADPS0) | (1 << ADPS2); // ADC clock prescaler - 0b101 - 32 - 500 kHz
-	ADCSRA |= (1 << ADPS2);				   // ADC clock prescaler - 0b100 - 16 - 1 MHz
-	//ADCSRA |= (1 << ADPS1) | (1 << ADPS0); // ADC clock prescaler - 0b101 - 8 - 2 MHz
-	//ADCSRA |= (1 << ADPS1);				   // ADC clock prescaler - 0b100 - 4 - 4 MHz
+	//ADCSRA |= (6 << ADPS0);				// ADC clock prescaler - 0b110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
+	//ADCSRA |= (1 << ADPS0) | (1 << ADPS2);	// ADC clock prescaler - 0b101 - 32 - 500 kHz
+	//ADCSRA |= (1 << ADPS2);				// ADC clock prescaler - 0b100 - 16 - 1 MHz
+	ADCSRA |= (1 << ADPS1) | (1 << ADPS0);	// ADC clock prescaler - 0b101 - 8 - 2 MHz
+	//ADCSRA |= (1 << ADPS1);				// ADC clock prescaler - 0b100 - 4 - 4 MHz
 
 	/* NOTE:
 	* Resolucija se (ocitno) nastavi zgolj s prescalerjem, torej ce bo ADC clock
