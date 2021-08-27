@@ -31,7 +31,7 @@ int main(void)
 
 	osc_IO_init();
 	osc_ADC_init(OSC_AD_INIT_USE_INTERRUPT);
-	//osc_LCD_init();
+	osc_LCD_init();
 	osc_ADC_select_channel(2); // X kanal joysticka
 
 	sei();
@@ -42,8 +42,7 @@ int main(void)
 		// Čakaj na stisk tipke
 		KBD_flush();
 		char x;
-		// Zakomentirano (za lažjo analizo assembly kode, da se ne obesi na LCD funkcijah)
-		/*while (1)
+		while (1)
 		{
 			KBD_Read();
 			x = KBD_GetReleasedKey();
@@ -53,11 +52,12 @@ int main(void)
 				osc_LCD_clear();
 			else if (x == BTN_A)
 				osc_LCD_draw_legend();
-		}*/
+		}
 		// Začetek branja
 		b_ADC_active_flag = 1;
-		//osc_ADC_Read_by_pooling(); // Prebere eno vrednost, da se izogne prvi (nepravilni) meritvi. Vmes disabla interrupte.
-		//osc_ADC_start_conversion();
+		osc_ADC_Read_by_pooling(); 	// Prebere eno vrednost, da se izogne prvi (nepravilni) meritvi. Vmes disabla interrupte.
+		osc_ADC_output_low();		// Potegne PB1 na low - kondenzator se začne polnit
+		osc_ADC_start_conversion();
 
 		// Čaka da je buffer poln
 		while (b_ADC_active_flag == 1)
@@ -67,6 +67,7 @@ int main(void)
 		// Izpis na ekran
 		for (int j = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM; j <= OSC_ADC_UPPER_ADC_CHANNEL_NUM; j++)
 			osc_LCD_display_vals(&*(buffer_pointers[j]), OSC_LCD_USE_DOTS, j);
-		// Dodaj različne barve in legendo (const int barve[j] = {rumena, modra,zelena, vijolčna..} )
+		
+		osc_ADC_output_high();
 	}
 }

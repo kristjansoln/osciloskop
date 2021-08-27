@@ -15,7 +15,7 @@
 #ifndef OSCILLOSCOPE_H_
 #define OSCILLOSCOPE_H_
 
-// Hardware level
+// HARDWARE LEVEL
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "lib/buffer.h"
@@ -23,8 +23,8 @@
 
 // Define the range of ADC channels -> remember to edit buffer declarations
 // IMPORTANT: These define the range of channels (Bottom = 1 and Upper = 4 means usage of channel 1, 2, 3 and 4).
-#define OSC_ADC_BOTTOM_ADC_CHANNEL_NUM 2
-#define OSC_ADC_UPPER_ADC_CHANNEL_NUM 3
+#define OSC_ADC_BOTTOM_ADC_CHANNEL_NUM 0
+#define OSC_ADC_UPPER_ADC_CHANNEL_NUM 0
 
 typedef enum osc_AD_init_type
 {
@@ -37,20 +37,34 @@ extern char b_ADC_active_flag; // This flag is set while ADC is filling up the b
 char c_current_ADC_channel; // Current ADC channel and buffer
 
 // Global buffer declarations
-extern struct buffer_t buff_2;
-extern struct buffer_t buff_3;
+extern struct buffer_t buff_0;
+//extern struct buffer_t buff_1;
+//extern struct buffer_t buff_2;
+//extern struct buffer_t buff_3;
+//extern struct buffer_t buff_4;
+//extern struct buffer_t buff_5;
+//extern struct buffer_t buff_6;
+//extern struct buffer_t buff_7;
 extern struct buffer_t *buffer_pointers[8]; // Sem shrani pointerje na bufferje
 
 void osc_IO_init();                              // Initialize IO ports. Modify this function if necessary.
 void osc_ADC_init(osc_AD_init_type_t init_type); // Initialize AD converter, use OSC_AD_INIT_USE_POOLING, OSC_AD_INIT_USE_INTERRUPT as argument. Dont forget sei().
+void osc_ADC_output_high();                      // Set output pin high.
+void osc_ADC_output_low();                       // Set output pin low.
 void osc_ADC_select_channel(uint8_t channel);    // Select ADC channel to read from.
 uint8_t osc_ADC_Read_by_pooling();               // Return the value of the currently selected ADC channel using pooling. Momentarily disables ADC interrupts.
 void osc_ADC_start_conversion();                 // Write to ADCSRA to start a conversion
-void osc_ADC_increment_channel();                // Sets the next channel according to the buffer array and macro definitions. TESTME
+void osc_ADC_increment_channel();                // Sets the next channel according to the buffer array and macro definitions. 
 
-// System level
 
-// Application level
+// SYSTEM LEVEL
+#define OSC_CTRL_UPPER_TRESH_VOLTAGE 150         // Upper treshold for voltage control
+#define OSC_CTRL_BOTTOM_TRESH_VOLTAGE 100        // Bottom treshold for voltage control
+
+void voltage_controller(char val);               // Compare the parameter to tresholds and set the output pin high/low accordingly.
+
+
+// APPLICATION LEVEL
 #include "lib/LCD_Ili9341.h"
 #ifndef LCD_USE_PRINTF
 #define LCD_USE_PRINTF
