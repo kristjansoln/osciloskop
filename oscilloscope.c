@@ -14,15 +14,16 @@
 char b_ADC_active_flag = 0;
 
 // Inicializacija globalnega bufferja
-//struct buffer_t buff_0 = {0};
+struct buffer_t buff_0 = {0};
 struct buffer_t buff_1 = {0};
-//struct buffer_t buff_2 = {0};
-//struct buffer_t buff_3 = {0};
+struct buffer_t buff_2 = {0};
+struct buffer_t buff_3 = {0};
 //struct buffer_t buff_4 = {0};
 //struct buffer_t buff_5 = {0};
 //struct buffer_t buff_6 = {0};
 //struct buffer_t buff_7 = {0};
-struct buffer_t *buffer_pointers[] = {0, &buff_1, 0, 0, 0, 0, 0, 0};
+struct buffer_t *buffer_pointers[] = {&buff_0, &buff_1, &buff_2, &buff_3, 0, 0, 0, 0};
+//struct buffer_t *buffer_pointers[] = {0, 0, &buff_2, &buff_3, 0, 0, 0, 0};
 
 void osc_IO_init()
 {
@@ -34,9 +35,10 @@ void osc_IO_init()
 	DIDR0 = 0xFF; // Disable digital input buffer on all ADC channels.
 
 	// Outputs configuration
-	DDRB |= (1 << DDRB1);
-	PORTB |= (1 << PORTB1);
-
+	// In case this config is modified, remember to modify the  voltage_controller function.
+	// Output index = channel index = bit offset
+	DDRE |= ((1 << DDRE0) | (1 << DDRE1) | (1 << DDRE2) | (1 << DDRE3));
+	PORTE |= ((1 << PORTE0) | (1 << PORTE1) | (1 << PORTE2) | (1 << PORTE3));
 	return;
 }
 
@@ -146,11 +148,13 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 	else
 	{
 		// Set next channel & start conversion
+		prev_chan = c_current_ADC_channel;
 		osc_ADC_increment_channel();
 		ADCSRA |= (1 << ADSC);
+		// Run controller function
+		osc_voltage_controller(c_value, prev_chan);
 	}
-	// Run controller function
-	osc_voltage_controller(c_value);
+
 	return;
 }
 
@@ -158,15 +162,17 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 // system level functions
 ////////////////////////////
 
-void osc_voltage_controller(char val)
+void osc_voltage_controller(char val, char prev_chan_v)
 {
+	// This function is dependent on the output configuration
+	// Output index = channel index = bit offset
 	if (val > OSC_CTRL_UPPER_TRESH_VOLTAGE)
 	{
-		PORTB |= (1 << PORTB1); // Stop charging - pin to high
+		PORTE |= (1 << prev_chan_v); // Stop charging - pin to high
 	}
 	else if (val < OSC_CTRL_BOTTOM_TRESH_VOLTAGE)
 	{
-		PORTB &= ~(1 << PORTB1); // Start charging - pin to low
+		PORTE &= ~(1 << prev_chan_v); // Start charging - pin to low
 	}
 	// else do nothing - value within treshold
 	return;
@@ -212,7 +218,7 @@ void osc_LCD_draw_bg()
 	// Oznake
 	UG_PutString(5, OSC_LCD_Y_OFFSET, "255");
 	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)(255.f * OSC_LCD_Y_SCALE_FACTOR) - 10, "0");
-	char temp[5]; 
+	char temp[5];
 	sprintf(temp, "%d", OSC_CTRL_UPPER_TRESH_VOLTAGE);
 	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)((float)(255 - OSC_CTRL_UPPER_TRESH_VOLTAGE) * OSC_LCD_Y_SCALE_FACTOR) - 5, temp);
 	sprintf(temp, "%d", OSC_CTRL_BOTTOM_TRESH_VOLTAGE);

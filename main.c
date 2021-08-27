@@ -12,7 +12,6 @@
 */
 
 #include <avr/io.h>
-#include "lib/LED.h"
 #include "lib/kbd.h"
 #include "oscilloscope.h"
 
@@ -24,16 +23,12 @@ int main(void)
 #define LCD_USE_PRINTF
 #endif
 
-	LED_Init();
-	LED_AllOff();
-
 	KBD_Init();
 
 	osc_IO_init();
 	osc_ADC_init(OSC_AD_INIT_USE_INTERRUPT);
 	osc_LCD_init();
-	osc_ADC_select_channel(2); // X kanal joysticka
-
+	
 	sei();
 
 	// main program
@@ -56,7 +51,6 @@ int main(void)
 		// Začetek branja
 		b_ADC_active_flag = 1;
 		osc_ADC_Read_by_pooling(); 	// Prebere eno vrednost, da se izogne prvi (nepravilni) meritvi. Vmes disabla interrupte.
-		osc_ADC_output_low();		// Potegne PB1 na low - kondenzator se začne polnit
 		osc_ADC_start_conversion();
 
 		// Čaka da je buffer poln
