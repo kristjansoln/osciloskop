@@ -23,8 +23,8 @@
 
 // Define the range of ADC channels -> remember to edit buffer declarations
 // IMPORTANT: These define the range of channels (Bottom = 1 and Upper = 4 means usage of channel 1, 2, 3 and 4).
-#define OSC_ADC_BOTTOM_ADC_CHANNEL_NUM 0
-#define OSC_ADC_UPPER_ADC_CHANNEL_NUM 0
+#define OSC_ADC_BOTTOM_ADC_CHANNEL_NUM 1
+#define OSC_ADC_UPPER_ADC_CHANNEL_NUM 1
 
 typedef enum osc_AD_init_type
 {
@@ -37,8 +37,8 @@ extern char b_ADC_active_flag; // This flag is set while ADC is filling up the b
 char c_current_ADC_channel; // Current ADC channel and buffer
 
 // Global buffer declarations
-extern struct buffer_t buff_0;
-//extern struct buffer_t buff_1;
+//extern struct buffer_t buff_0;
+extern struct buffer_t buff_1;
 //extern struct buffer_t buff_2;
 //extern struct buffer_t buff_3;
 //extern struct buffer_t buff_4;
@@ -58,10 +58,10 @@ void osc_ADC_increment_channel();                // Sets the next channel accord
 
 
 // SYSTEM LEVEL
-#define OSC_CTRL_UPPER_TRESH_VOLTAGE 150         // Upper treshold for voltage control
+#define OSC_CTRL_UPPER_TRESH_VOLTAGE 110         // Upper treshold for voltage control
 #define OSC_CTRL_BOTTOM_TRESH_VOLTAGE 100        // Bottom treshold for voltage control
 
-void voltage_controller(char val);               // Compare the parameter to tresholds and set the output pin high/low accordingly.
+void osc_voltage_controller(char val);               // Compare the parameter to tresholds and set the output pin high/low accordingly.
 
 
 // APPLICATION LEVEL

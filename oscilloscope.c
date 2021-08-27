@@ -14,15 +14,15 @@
 char b_ADC_active_flag = 0;
 
 // Inicializacija globalnega bufferja
-struct buffer_t buff_0 = {0};
-//struct buffer_t buff_1 = {0};
+//struct buffer_t buff_0 = {0};
+struct buffer_t buff_1 = {0};
 //struct buffer_t buff_2 = {0};
 //struct buffer_t buff_3 = {0};
 //struct buffer_t buff_4 = {0};
 //struct buffer_t buff_5 = {0};
 //struct buffer_t buff_6 = {0};
 //struct buffer_t buff_7 = {0};
-struct buffer_t *buffer_pointers[] = {&buff_0, 0, 0, 0, 0, 0, 0, 0};
+struct buffer_t *buffer_pointers[] = {0, &buff_1, 0, 0, 0, 0, 0, 0};
 
 void osc_IO_init()
 {
@@ -34,8 +34,8 @@ void osc_IO_init()
 	DIDR0 = 0xFF; // Disable digital input buffer on all ADC channels.
 
 	// Outputs configuration
-	DDRB |= (1<<DDRB1);
-	PORTB |= (1<<PORTB1);
+	DDRB |= (1 << DDRB1);
+	PORTB |= (1 << PORTB1);
 
 	return;
 }
@@ -51,8 +51,8 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 	ADCSRA = 0x00; // Clear register
 	//ADCSRA |= (6 << ADPS0);				// ADC clock prescaler - 0b110 - 64 - 250 kHz - TODO: TO PROBAJ POJACAT NA 500 kHz
 	//ADCSRA |= (1 << ADPS0) | (1 << ADPS2);	// ADC clock prescaler - 0b101 - 32 - 500 kHz
-	ADCSRA |= (1 << ADPS2);				// ADC clock prescaler - 0b100 - 16 - 1 MHz
-	//ADCSRA |= (1 << ADPS1) | (1 << ADPS0);	// ADC clock prescaler - 0b101 - 8 - 2 MHz
+	//ADCSRA |= (1 << ADPS2); // ADC clock prescaler - 0b100 - 16 - 1 MHz
+	ADCSRA |= (1 << ADPS1) | (1 << ADPS0);	// ADC clock prescaler - 0b101 - 8 - 2 MHz
 	//ADCSRA |= (1 << ADPS1);				// ADC clock prescaler - 0b100 - 4 - 4 MHz
 
 	/* NOTE:
@@ -70,9 +70,9 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 	// Triggering and interrupts setup. 	NOTE: dont forget sei();
 	switch (init_type)
 	{
-		case OSC_AD_INIT_USE_POOLING: // Triggera se ročno, na koncu moraš sam poolat da prebereš rezultat.
+	case OSC_AD_INIT_USE_POOLING: // Triggera se ročno, na koncu moraš sam poolat da prebereš rezultat.
 		break;
-		case OSC_AD_INIT_USE_INTERRUPT: // Triggera se ro�no, na koncu konverzije pro�i interrupt.
+	case OSC_AD_INIT_USE_INTERRUPT: // Triggera se ro�no, na koncu konverzije pro�i interrupt.
 		ADCSRA |= (1 << ADIE);		// AD interrupt enable
 		break;
 	}
@@ -86,13 +86,13 @@ void osc_ADC_init(osc_AD_init_type_t init_type)
 
 void osc_ADC_output_high()
 {
-	PORTB |= (1<<PORTB1);
+	PORTB |= (1 << PORTB1);
 	return;
 }
 
 void osc_ADC_output_low()
 {
-	PORTB &= ~(1<<PORTB1);
+	PORTB &= ~(1 << PORTB1);
 	return;
 }
 
@@ -107,7 +107,7 @@ void osc_ADC_increment_channel()
 {
 	// Increment channel + fast modulo
 	if ((++c_current_ADC_channel) > OSC_ADC_UPPER_ADC_CHANNEL_NUM)
-	c_current_ADC_channel = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM;
+		c_current_ADC_channel = OSC_ADC_BOTTOM_ADC_CHANNEL_NUM;
 
 	ADMUX = (ADMUX & 0xF0) | (c_current_ADC_channel & 0x0F); // This is safer
 	//ADMUX = (ADMUX & 0xF0) | c_current_ADC_channel;		// This is faster
@@ -142,13 +142,15 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 	char c_value = ADCH;
 	// Če je buffer poln, ne proži naslednje konverzije in cleara flag, ki je indikator za konec merilnega cikla
 	if (BUFF_store_data(c_value, buffer_pointers[c_current_ADC_channel]) == BUFFER_ERROR)
-	b_ADC_active_flag = 0; // Zamenjaj s clearADCflag()?
+		b_ADC_active_flag = 0; // Zamenjaj s clearADCflag()?
 	else
 	{
 		// Set next channel & start conversion
 		osc_ADC_increment_channel();
 		ADCSRA |= (1 << ADSC);
 	}
+	// Run controller function
+	osc_voltage_controller(c_value);
 	return;
 }
 
@@ -156,17 +158,17 @@ ISR(ADC_vect) // ADC conv. complete interrupt
 // system level functions
 ////////////////////////////
 
-void voltage_controller(char val)
+void osc_voltage_controller(char val)
 {
-	if(val > OSC_CTRL_UPPER_TRESH_VOLTAGE)
+	if (val > OSC_CTRL_UPPER_TRESH_VOLTAGE)
 	{
-		PORTB |= (1<<PORTB1);	// Stop charging - pin to high
+		PORTB |= (1 << PORTB1); // Stop charging - pin to high
 	}
-	else if(val < OSC_CTRL_BOTTOM_TRESH_VOLTAGE)
+	else if (val < OSC_CTRL_BOTTOM_TRESH_VOLTAGE)
 	{
-		PORTB &= ~(1<<PORTB1);	// Start charging - pin to low
+		PORTB &= ~(1 << PORTB1); // Start charging - pin to low
 	}
-	// else do nothing
+	// else do nothing - value within treshold
 	return;
 }
 
@@ -174,7 +176,7 @@ void voltage_controller(char val)
 // application level functions
 ///////////////////////////////
 const int osc_LCD_colors_array[8] = {ILI9341_YELLOW, ILI9341_RED, ILI9341_BLUE, ILI9341_PURPLE,
-ILI9341_CYAN, ILI9341_PINK, ILI9341_OLIVE, ILI9341_ORANGE};
+									 ILI9341_CYAN, ILI9341_PINK, ILI9341_OLIVE, ILI9341_ORANGE};
 
 void osc_LCD_init()
 {
@@ -194,7 +196,6 @@ void osc_LCD_show_value_at_XY(int x, int y, int value)
 
 void osc_LCD_clear()
 {
-	// Črn kvadrat čez ekran
 	ILI9341_fillScreen(ILI9341_BLACK);
 	osc_LCD_draw_bg();
 	return;
@@ -202,11 +203,20 @@ void osc_LCD_clear()
 
 void osc_LCD_draw_bg()
 {
+	// Draw axis
 	ILI9341_drawFastVLine(OSC_LCD_X_OFFSET, OSC_LCD_Y_OFFSET, (int)(255.f * OSC_LCD_Y_SCALE_FACTOR), ILI9341_WHITE);
 	ILI9341_drawFastHLine(OSC_LCD_X_OFFSET, OSC_LCD_Y_OFFSET + (int)(255.f * OSC_LCD_Y_SCALE_FACTOR), BUFFER_LENGTH, ILI9341_WHITE);
-
+	// Draw treshold lines
+	ILI9341_drawFastHLine(OSC_LCD_X_OFFSET, OSC_LCD_Y_OFFSET + (int)((float)(255 - OSC_CTRL_UPPER_TRESH_VOLTAGE) * OSC_LCD_Y_SCALE_FACTOR), BUFFER_LENGTH, ILI9341_DARKGREY);
+	ILI9341_drawFastHLine(OSC_LCD_X_OFFSET, OSC_LCD_Y_OFFSET + (int)((float)(255 - OSC_CTRL_BOTTOM_TRESH_VOLTAGE) * OSC_LCD_Y_SCALE_FACTOR), BUFFER_LENGTH, ILI9341_DARKGREY);
+	// Oznake
 	UG_PutString(5, OSC_LCD_Y_OFFSET, "255");
 	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)(255.f * OSC_LCD_Y_SCALE_FACTOR) - 10, "0");
+	char temp[5]; 
+	sprintf(temp, "%d", OSC_CTRL_UPPER_TRESH_VOLTAGE);
+	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)((float)(255 - OSC_CTRL_UPPER_TRESH_VOLTAGE) * OSC_LCD_Y_SCALE_FACTOR) - 5, temp);
+	sprintf(temp, "%d", OSC_CTRL_BOTTOM_TRESH_VOLTAGE);
+	UG_PutString(5, OSC_LCD_Y_OFFSET + (int)((float)(255 - OSC_CTRL_BOTTOM_TRESH_VOLTAGE) * OSC_LCD_Y_SCALE_FACTOR) - 5, temp);
 	return;
 }
 
@@ -222,7 +232,7 @@ void osc_LCD_draw_legend()
 	{
 		// Draw dot (channel-in-use indicator)
 		if ((i >= OSC_ADC_BOTTOM_ADC_CHANNEL_NUM) && (i <= OSC_ADC_UPPER_ADC_CHANNEL_NUM))
-		UG_PutString(10, (40 + i * 20), "*");
+			UG_PutString(10, (40 + i * 20), "*");
 		// Print channel name
 		sprintf(string_to_display, "AD channel %d", i);
 		UG_PutString(20, (40 + i * 20), string_to_display);
@@ -266,13 +276,13 @@ void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type,
 		{
 			switch (display_type) // Izberi način prikaza
 			{
-				case OSC_LCD_USE_DOTS:
+			case OSC_LCD_USE_DOTS:
 				osc_LCD_draw_dot_by_val(data, (i + 1), osc_LCD_colors_array[color_index]);
 				break;
-				case OSC_LCD_USE_LINES:
+			case OSC_LCD_USE_LINES:
 				osc_LCD_draw_line_by_val(data, i + 1, osc_LCD_colors_array[color_index]);
 				break;
-				default:
+			default:
 				printf("Error displaying vals, check passed arguments");
 				while (1)
 				{
@@ -281,7 +291,7 @@ void osc_LCD_display_vals(struct buffer_t *buff, osc_LCD_display_t display_type,
 			}
 		}
 		else
-		break; // Buffer je prazen, koncaj pisanje
+			break; // Buffer je prazen, koncaj pisanje
 	}
 	return;
 }
