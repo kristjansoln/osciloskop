@@ -3,6 +3,7 @@ ZAKLJUČNI PROJEKT PRI PREDMETU OSNOVE MIKROPROCESORSKE ELEKTRONIKE
 Kristjan Šoln  
 Ljubljana, avgust 2021  
   
+Video delovanja: https://drive.google.com/file/d/1-J9S_o9b7R6E5liVCJ3NMwhoj98kqPy8/view  
 ### 1. OPIS IDEJE  
 Prvotna ideja tega projekta je »chopper« Miško gonilnik za koračni motor. »Chopper drive« je eden izmed najboljših načinov krmiljenja koračnega motorja, saj lahko dosežemo zelo dobro navorno-hitrostno karakteristiko. Tuljave motorja priklopimo na visokonapetostni vir za doseganje hitrih tokovnih sprememb in izvajamo sekanje toka, torej se izvede le prvi del tokovnega prehodnega pojava na navitju. S tem dosežemo skoraj idealne oblike tokovnih pulzov na navitju, kot kaže slika 1, in se izognemo situaciji na sliki 2.  
 Ideja prvotnega projekta je bila, da bi preko napetosti na zaporednem uporu sklepal na tok navitja, in ustrezno preklapljal tranzistor, da bi končen tok imel obliko grafa zgoraj. Zdaj projekt nima te funkcionalnosti, pač pa krmili napetost na RC členu po podobnem principu. Izdelal sem torej neke vrste podlago za končno funkcionalnost: merjenje napetosti na več ADC kanalih ter krmiljenje vhodov na podlagi meritev. Za model tuljave motorja sem uporabil RC člen in meril njegov prehodni pojav. Ker doma nimam osciloskopa, sem dodal tudi izris krivulj na LCD. Iz teh razlogov je bilo ime tega projekta najprej »Osciloskop«, isto velja za imena datotek v projektu.  
